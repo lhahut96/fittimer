@@ -3,5 +3,7 @@
     <string name="rep_string">Number of reps</string>
     <string name="workout_string">Workout time</string>
     <string name="rest_string">Rest time</string>
+    <string name="fittimer">FitTimer</string>
+    <string name="workout">Workout</string>
 
 </resources>

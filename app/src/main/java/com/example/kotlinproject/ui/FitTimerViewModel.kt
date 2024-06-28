@@ -1,6 +1,5 @@
 package com.example.kotlinproject.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,6 +58,14 @@ class FitTimerViewModel : ViewModel() {
             FitTimerType.REST -> decreaseRestTime()
         }
 
+    }
+
+    val nextRound: () -> Unit = {
+        if (_uiState.value.currentRound < _uiState.value.numberOfRounds) {
+            _uiState.update { currentState ->
+                currentState.copy(currentRound = currentState.currentRound.inc())
+            }
+        }
     }
 }
 

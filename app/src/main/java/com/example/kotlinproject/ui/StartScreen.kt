@@ -38,10 +38,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kotlinproject.R
 
 @Composable
-fun FitTimerScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
+fun StartScreen(
+    fitTimerViewModel: FitTimerViewModel = viewModel(), onStartButton: () -> Unit = {}
+) {
+
     val fitTimerState = fitTimerViewModel.uiState.collectAsState()
     val state = rememberScrollState()
-
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -83,14 +85,12 @@ fun FitTimerScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
-            onClick = {},
-            colors = ButtonColors(
+            onClick = onStartButton, colors = ButtonColors(
                 colorResource(id = R.color.primary),
                 colorResource(id = R.color.white),
                 colorResource(id = R.color.primary),
                 colorResource(id = R.color.primary),
-            ),
-            modifier = Modifier
+            ), modifier = Modifier
                 .width(130.dp)
                 .height(48.dp)
         ) {
@@ -108,6 +108,7 @@ fun FitTimerComponent(
     decreaseHandler: () -> Unit,
     onStringChange: (String) -> Unit,
 ) {
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -140,7 +141,7 @@ fun FitTimerComponent(
                         .padding(0.dp),
                     singleLine = true
                 )
-                if (!secondValue.isBlank()) {
+                if (secondValue.isNotBlank()) {
                     Text(text = ":")
                     BasicTextField(
                         value = secondValue,
