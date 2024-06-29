@@ -1,6 +1,7 @@
 package com.example.kotlinproject.ui
 
 import androidx.lifecycle.ViewModel
+import com.example.kotlinproject.data.TimeUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +22,11 @@ class FitTimerViewModel : ViewModel() {
         }
     }
 
+    val changeRep: (stringRep: String) -> Unit = {
+        val convertedToInt = it.toIntOrNull() ?: 0
+        _uiState.update { currentState -> currentState.copy(numberOfRounds = convertedToInt) }
+    }
+
     private val increaseWorkOutTime: () -> Unit = {
         _uiState.update { currentState -> currentState.copy(workoutTime = currentState.workoutTime.increaseTenSecond()) }
     }
@@ -37,11 +43,29 @@ class FitTimerViewModel : ViewModel() {
     }
 
 
-    val changeWorkOutTimeByString: (timeString: String) -> Unit = { timeString ->
-        _uiState.update { currentState ->
-            currentState.copy(workoutTime = currentState.workoutTime.setTimeByString(timeString))
+    val changeTimeByString: (timeString: String, timeUnit: TimeUnit, fitTimerState: FitTimerState) -> Unit =
+        { timeString, timeUnit, fitTimerState ->
+            when (fitTimerState) {
+                FitTimerState.Workout -> _uiState.update { currentState ->
+                    currentState.copy(
+                        workoutTime = currentState.workoutTime.setTimeByString(
+                            timeString,
+                            timeUnit
+                        )
+                    )
+                }
+
+                FitTimerState.Rest -> _uiState.update { currentState ->
+                    currentState.copy(
+                        workoutTime = currentState.restTime.setTimeByString(
+                            timeString,
+                            timeUnit
+                        )
+                    )
+                }
+            }
+
         }
-    }
 
     val increase: (type: FitTimerType) -> Unit = { type ->
         when (type) {
@@ -67,6 +91,7 @@ class FitTimerViewModel : ViewModel() {
             }
         }
     }
+
 }
 
 enum class FitTimerType { REP, WORKOUT, REST }

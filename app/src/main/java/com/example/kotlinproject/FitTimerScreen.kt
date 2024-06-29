@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -76,11 +77,14 @@ fun FitTimerApp(
     val startMediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.start)
     val currentScreen =
         FitTimerScreen.valueOf(backStackEntry?.destination?.route ?: FitTimerScreen.Start.name)
-    Scaffold(topBar = {
-        FitTimerAppBar(currentScreen,
-            canNavigateBack = navController.previousBackStackEntry != null,
-            navigateUp = { navController.navigateUp() })
-    }) { innerPadding ->
+    Scaffold(
+        topBar = {
+            FitTimerAppBar(currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() })
+        },
+        modifier = Modifier.imePadding()
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             enterTransition = {

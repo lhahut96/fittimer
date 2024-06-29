@@ -1,21 +1,19 @@
 package com.example.kotlinproject.data
 
 import android.util.Log
-
+enum class TimeUnit() {Minute, Second}
 class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
 
     private val minutes = _minutes
     private val seconds = _seconds
 
-    constructor(timeString: String) : this() {
-        setTimeByString(timeString)
-    }
+    fun setTimeByString(timeString: String, timeUnit: TimeUnit ): FitTime {
+        val timeConverted = timeString.toIntOrNull() ?: 0
+        return when (timeUnit) {
+            TimeUnit.Minute -> FitTime(timeConverted, _seconds)
+            TimeUnit.Second -> FitTime(_minutes, timeConverted)
+        }
 
-    fun setTimeByString(timeString: String): FitTime {
-        val timePair: Pair<Int, Int> = formattedTimeToMinutesAndSeconds(timeString);
-        val newMinutes = timePair.first
-        val newSeconds = timePair.second
-        return FitTime(newMinutes, newSeconds)
     }
 
     fun getTimeString(): String {

@@ -1,12 +1,16 @@
 package com.example.kotlinproject.ui
 
+import android.util.Log
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,9 +27,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,14 +48,47 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kotlinproject.R
+import com.example.kotlinproject.data.TimeUnit
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun StartScreen(
     fitTimerViewModel: FitTimerViewModel = viewModel(), onStartButton: () -> Unit = {}
 ) {
-
     val fitTimerState = fitTimerViewModel.uiState.collectAsState()
+
+    var repText by remember {
+        mutableStateOf(fitTimerState.value.numberOfRounds.toString())
+    }
+
+    var workOutMinuteText by remember {
+        mutableStateOf(fitTimerState.value.workoutTime.formatedMinutes())
+    }
+
+    var workOutSecondText by remember {
+        mutableStateOf(fitTimerState.value.workoutTime.formatedSeconds())
+    }
+
+    var restMinuteText by remember {
+        mutableStateOf(fitTimerState.value.restTime.formatedMinutes())
+    }
+
+    var restSecondText by remember {
+        mutableStateOf(fitTimerState.value.restTime.formatedSeconds())
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+    val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
     val state = rememberScrollState()
+
+    LaunchedEffect(key1 = keyboardHeight) {
+        Log.i("keyboard height", keyboardHeight.toString())
+        coroutineScope.launch {
+            state.scrollBy(keyboardHeight.toFloat())
+        }
+    }
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -52,7 +97,6 @@ fun StartScreen(
             .padding(start = 20.dp, end = 20.dp)
             .verticalScroll(state)
     ) {
-        Text(text = "FitTimer", fontSize = 30.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(40.dp))
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
@@ -61,26 +105,54 @@ fun StartScreen(
         ) {
             FitTimerComponent(
                 text = stringResource(id = R.string.rep_string),
-                fitTimerState.value.numberOfRounds.toString(),
-                increaseHandler = { fitTimerViewModel.increase(FitTimerType.REP) },
-                decreaseHandler = { fitTimerViewModel.decrease(FitTimerType.REP) },
-                onStringChange = fitTimerViewModel.changeWorkOutTimeByString,
+                repText,
+                increaseHandler = {
+                    fitTimerViewModel.increase(FitTimerType.REP)
+                    repText = fitTimerState.value.numberOfRounds.toString()
+                },
+                decreaseHandler = {
+                    fitTimerViewModel.decrease(FitTimerType.REP)
+                    repText = fitTimerState.value.numberOfRounds.toString()
+                },
+                onStringChange = {
+                    fitTimerViewModel.changeRep(it)
+                    repText = it
+                },
+                isRep = true
             )
             FitTimerComponent(
                 text = stringResource(id = R.string.workout_string),
-                value = fitTimerState.value.workoutTime.formatedMinutes(),
-                secondValue = fitTimerState.value.workoutTime.formatedSeconds(),
+                value = workOutMinuteText,
+                secondValue = workOutSecondText,
                 increaseHandler = { fitTimerViewModel.increase(FitTimerType.WORKOUT) },
                 decreaseHandler = { fitTimerViewModel.decrease(FitTimerType.WORKOUT) },
-                onStringChange = fitTimerViewModel.changeWorkOutTimeByString
+                onStringChange = {
+                    if (it.isNotBlank()) {
+                        fitTimerViewModel.changeTimeByString(
+                            it,
+                            TimeUnit.Minute,
+                            FitTimerState.Workout
+                        )
+                    }
+                    workOutMinuteText = it
+                }
             )
             FitTimerComponent(
                 text = stringResource(id = R.string.rest_string),
-                value = fitTimerState.value.restTime.formatedMinutes(),
-                secondValue = fitTimerState.value.restTime.formatedSeconds(),
+                value = restMinuteText,
+                secondValue = restSecondText,
                 increaseHandler = { fitTimerViewModel.increase(FitTimerType.REST) },
                 decreaseHandler = { fitTimerViewModel.decrease(FitTimerType.REST) },
-                onStringChange = fitTimerViewModel.changeWorkOutTimeByString
+                onStringChange = {
+                    if (it.isNotBlank()) {
+                        fitTimerViewModel.changeTimeByString(
+                            it,
+                            TimeUnit.Minute,
+                            FitTimerState.Rest
+                        )
+                    }
+                    workOutMinuteText = it
+                }
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
@@ -106,7 +178,8 @@ fun FitTimerComponent(
     secondValue: String = "",
     increaseHandler: () -> Unit,
     decreaseHandler: () -> Unit,
-    onStringChange: (String) -> Unit,
+    onStringChange: (it: String) -> Unit = {},
+    isRep: Boolean = false,
 ) {
 
     Column(
@@ -132,15 +205,28 @@ fun FitTimerComponent(
             ) {
                 BasicTextField(
                     value = value,
-                    onValueChange = {},
+                    onValueChange = {
+                        onStringChange(it)
+                    },
                     textStyle = TextStyle(fontSize = 24.sp),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = { onStringChange(value) }),
+                    keyboardActions = KeyboardActions(
+                        onDone = { Log.i("test", "test") },
+                        onGo = { Log.i("test", "go") }),
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
-                        .padding(0.dp),
-                    singleLine = true
-                )
+                        .padding(0.dp)
+                        .onFocusChanged {
+
+                            if (!it.isFocused) {
+                                if (value.isBlank()) {
+                                    if (isRep) onStringChange("0") else onStringChange("00")
+                                }
+                            }
+                        },
+                    singleLine = true,
+
+                    )
                 if (secondValue.isNotBlank()) {
                     Text(text = ":")
                     BasicTextField(
@@ -148,7 +234,7 @@ fun FitTimerComponent(
                         onValueChange = {},
                         textStyle = TextStyle(fontSize = 24.sp),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                        keyboardActions = KeyboardActions(onDone = { onStringChange(value) }),
+                        keyboardActions = KeyboardActions(onDone = {}),
                         modifier = Modifier
                             .width(IntrinsicSize.Min)
                             .padding(0.dp),
