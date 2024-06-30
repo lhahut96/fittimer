@@ -1,13 +1,14 @@
 package com.example.kotlinproject.data
 
 import android.util.Log
-enum class TimeUnit() {Minute, Second}
+
+enum class TimeUnit() { Minute, Second }
 class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
 
     private val minutes = _minutes
     private val seconds = _seconds
 
-    fun setTimeByString(timeString: String, timeUnit: TimeUnit ): FitTime {
+    fun setTimeByString(timeString: String, timeUnit: TimeUnit): FitTime {
         val timeConverted = timeString.toIntOrNull() ?: 0
         return when (timeUnit) {
             TimeUnit.Minute -> FitTime(timeConverted, _seconds)
@@ -66,9 +67,14 @@ class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
         if (seconds == 0 && minutes == 0) {
             return this
         }
-        if (seconds == 0) {
-            _minutes -= 1
-            _seconds = 50
+        if (seconds < 10) {
+            if (_minutes >=1) {
+                _minutes -= 1
+                _seconds = 50 + seconds
+            } else {
+                _minutes = 0
+                _seconds = 0
+            }
         } else {
             _seconds -= 10
         }

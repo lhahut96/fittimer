@@ -1,6 +1,8 @@
 package com.example.kotlinproject.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.kotlinproject.data.FitTime
 import com.example.kotlinproject.data.TimeUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,13 +14,17 @@ class FitTimerViewModel : ViewModel() {
 
     var uiState: StateFlow<FitTimerUiState> = _uiState.asStateFlow()
 
-    private val increaseRep: () -> Unit = {
+    val increaseRep: () -> String = {
         _uiState.update { currentState -> currentState.copy(numberOfRounds = currentState.numberOfRounds.inc()) }
+        _uiState.value.numberOfRounds.toString()
     }
 
-    private val decreaseRep: () -> Unit = {
+    val decreaseRep: () -> String = {
         if (_uiState.value.numberOfRounds > 0) {
             _uiState.update { currentState -> currentState.copy(numberOfRounds = currentState.numberOfRounds.dec()) }
+            _uiState.value.numberOfRounds.toString()
+        } else {
+            "0"
         }
     }
 
@@ -27,19 +33,27 @@ class FitTimerViewModel : ViewModel() {
         _uiState.update { currentState -> currentState.copy(numberOfRounds = convertedToInt) }
     }
 
-    private val increaseWorkOutTime: () -> Unit = {
-        _uiState.update { currentState -> currentState.copy(workoutTime = currentState.workoutTime.increaseTenSecond()) }
+    val increaseWorkOutTime: () -> FitTime = {
+        val updatedFitTime = _uiState.value.workoutTime.increaseTenSecond()
+        _uiState.update { currentState -> currentState.copy(workoutTime = updatedFitTime) }
+        updatedFitTime
     }
 
-    private val decreaseWorkOutTime: () -> Unit = {
-        _uiState.update { currentState -> currentState.copy(workoutTime = currentState.workoutTime.decreaseTenSecond()) }
+    val decreaseWorkOutTime: () -> FitTime = {
+        val updatedFitTime = _uiState.value.workoutTime.decreaseTenSecond()
+        _uiState.update { currentState -> currentState.copy(workoutTime = updatedFitTime) }
+        updatedFitTime
     }
-    private val increaseRestTime: () -> Unit = {
-        _uiState.update { currentState -> currentState.copy(restTime = currentState.restTime.increaseTenSecond()) }
+    val increaseRestTime: () -> FitTime = {
+        val updatedFitTime = _uiState.value.restTime.increaseTenSecond()
+        _uiState.update { currentState -> currentState.copy(restTime = updatedFitTime) }
+        updatedFitTime
     }
 
-    private val decreaseRestTime: () -> Unit = {
-        _uiState.update { currentState -> currentState.copy(restTime = currentState.restTime.decreaseTenSecond()) }
+    val decreaseRestTime: () -> FitTime = {
+        val updatedFitTime = _uiState.value.restTime.decreaseTenSecond()
+        _uiState.update { currentState -> currentState.copy(restTime = updatedFitTime) }
+        updatedFitTime
     }
 
 
@@ -57,7 +71,7 @@ class FitTimerViewModel : ViewModel() {
 
                 FitTimerState.Rest -> _uiState.update { currentState ->
                     currentState.copy(
-                        workoutTime = currentState.restTime.setTimeByString(
+                        restTime = currentState.restTime.setTimeByString(
                             timeString,
                             timeUnit
                         )
@@ -67,13 +81,13 @@ class FitTimerViewModel : ViewModel() {
 
         }
 
-    val increase: (type: FitTimerType) -> Unit = { type ->
-        when (type) {
-            FitTimerType.REP -> increaseRep()
-            FitTimerType.WORKOUT -> increaseWorkOutTime()
-            FitTimerType.REST -> increaseRestTime()
-        }
-    }
+//    val increase: (type: FitTimerType) -> () -> FitTime = { type ->
+//        when (type) {
+//            FitTimerType.REP -> increaseRep
+//            FitTimerType.WORKOUT -> increaseWorkOutTime
+//            FitTimerType.REST -> increaseRestTime
+//        }
+//    }
 
     val decrease: (type: FitTimerType) -> Unit = { type ->
         when (type) {

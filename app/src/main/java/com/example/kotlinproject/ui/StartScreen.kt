@@ -107,16 +107,16 @@ fun StartScreen(
                 text = stringResource(id = R.string.rep_string),
                 repText,
                 increaseHandler = {
-                    fitTimerViewModel.increase(FitTimerType.REP)
-                    repText = fitTimerState.value.numberOfRounds.toString()
+                    val rep = fitTimerViewModel.increaseRep()
+                    repText = rep
                 },
                 decreaseHandler = {
-                    fitTimerViewModel.decrease(FitTimerType.REP)
-                    repText = fitTimerState.value.numberOfRounds.toString()
+                    val rep = fitTimerViewModel.decreaseRep()
+                    repText = rep
                 },
-                onStringChange = {
-                    fitTimerViewModel.changeRep(it)
-                    repText = it
+                onStringChange = { s: String, _: TimeUnit ->
+                    fitTimerViewModel.changeRep(s)
+                    repText = s
                 },
                 isRep = true
             )
@@ -124,34 +124,64 @@ fun StartScreen(
                 text = stringResource(id = R.string.workout_string),
                 value = workOutMinuteText,
                 secondValue = workOutSecondText,
-                increaseHandler = { fitTimerViewModel.increase(FitTimerType.WORKOUT) },
-                decreaseHandler = { fitTimerViewModel.decrease(FitTimerType.WORKOUT) },
-                onStringChange = {
-                    if (it.isNotBlank()) {
+                haveSecondValue = true,
+                increaseHandler = {
+                    val newWorkOutTime = fitTimerViewModel.increaseWorkOutTime()
+                    workOutMinuteText = newWorkOutTime.formatedMinutes()
+                    workOutSecondText = newWorkOutTime.formatedSeconds()
+                },
+                decreaseHandler = {
+                    val newWorkOutTime = fitTimerViewModel.decreaseWorkOutTime()
+                    workOutMinuteText = newWorkOutTime.formatedMinutes()
+                    workOutSecondText = newWorkOutTime.formatedSeconds()
+                },
+                onStringChange = { s: String, timeUnit: TimeUnit ->
+                    if (s.isNotBlank()) {
                         fitTimerViewModel.changeTimeByString(
-                            it,
-                            TimeUnit.Minute,
+                            s,
+                            timeUnit,
                             FitTimerState.Workout
                         )
                     }
-                    workOutMinuteText = it
+                    if (timeUnit == TimeUnit.Minute) {
+                        workOutMinuteText =
+                            s
+                    } else {
+                        workOutSecondText =
+                            s
+                    }
                 }
             )
             FitTimerComponent(
                 text = stringResource(id = R.string.rest_string),
                 value = restMinuteText,
                 secondValue = restSecondText,
-                increaseHandler = { fitTimerViewModel.increase(FitTimerType.REST) },
-                decreaseHandler = { fitTimerViewModel.decrease(FitTimerType.REST) },
-                onStringChange = {
-                    if (it.isNotBlank()) {
+                haveSecondValue = true,
+                increaseHandler = {
+                    val newRestTime = fitTimerViewModel.increaseRestTime()
+                    restMinuteText = newRestTime.formatedMinutes()
+                    restSecondText = newRestTime.formatedSeconds()
+                },
+                decreaseHandler = {
+                    val newRestTime = fitTimerViewModel.decreaseRestTime()
+                    restMinuteText = newRestTime.formatedMinutes()
+                    restSecondText = newRestTime.formatedSeconds()
+                },
+                onStringChange = { s: String, timeUnit: TimeUnit ->
+                    if (s.isNotBlank()) {
                         fitTimerViewModel.changeTimeByString(
-                            it,
-                            TimeUnit.Minute,
+                            s,
+                            timeUnit,
                             FitTimerState.Rest
                         )
                     }
-                    workOutMinuteText = it
+                    if (timeUnit == TimeUnit.Minute) {
+                        restMinuteText =
+                            s
+                    } else {
+                        restSecondText =
+                            s
+                    }
                 }
             )
         }
@@ -175,10 +205,11 @@ fun StartScreen(
 fun FitTimerComponent(
     text: String = "Default Text",
     value: String = "00:00",
+    haveSecondValue: Boolean = false,
     secondValue: String = "",
     increaseHandler: () -> Unit,
     decreaseHandler: () -> Unit,
-    onStringChange: (it: String) -> Unit = {},
+    onStringChange: (it: String, timeUnit: TimeUnit) -> Unit = { s: String, timeUnit: TimeUnit -> },
     isRep: Boolean = false,
 ) {
 
@@ -206,7 +237,7 @@ fun FitTimerComponent(
                 BasicTextField(
                     value = value,
                     onValueChange = {
-                        onStringChange(it)
+                        onStringChange(it, TimeUnit.Minute)
                     },
                     textStyle = TextStyle(fontSize = 24.sp),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -217,27 +248,41 @@ fun FitTimerComponent(
                         .width(IntrinsicSize.Min)
                         .padding(0.dp)
                         .onFocusChanged {
-
                             if (!it.isFocused) {
                                 if (value.isBlank()) {
-                                    if (isRep) onStringChange("0") else onStringChange("00")
+                                    if (isRep) onStringChange(
+                                        "0",
+                                        TimeUnit.Minute
+                                    ) else onStringChange("00", TimeUnit.Minute)
                                 }
                             }
                         },
                     singleLine = true,
 
                     )
-                if (secondValue.isNotBlank()) {
-                    Text(text = ":")
+                if (haveSecondValue) {
+                    Text(text = ":", modifier = Modifier.padding(2.dp))
                     BasicTextField(
                         value = secondValue,
-                        onValueChange = {},
+                        onValueChange = {
+                            onStringChange(it, TimeUnit.Second)
+                        },
                         textStyle = TextStyle(fontSize = 24.sp),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         keyboardActions = KeyboardActions(onDone = {}),
                         modifier = Modifier
                             .width(IntrinsicSize.Min)
-                            .padding(0.dp),
+                            .padding(0.dp)
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    if (value.isBlank()) {
+                                        if (isRep) onStringChange(
+                                            "0",
+                                            TimeUnit.Second
+                                        ) else onStringChange("00", TimeUnit.Second)
+                                    }
+                                }
+                            },
                         singleLine = true
                     )
                 }
