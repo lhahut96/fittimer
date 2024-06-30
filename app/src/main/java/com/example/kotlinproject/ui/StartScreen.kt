@@ -83,7 +83,6 @@ fun StartScreen(
     val state = rememberScrollState()
 
     LaunchedEffect(key1 = keyboardHeight) {
-        Log.i("keyboard height", keyboardHeight.toString())
         coroutineScope.launch {
             state.scrollBy(keyboardHeight.toFloat())
         }
@@ -120,8 +119,7 @@ fun StartScreen(
                 },
                 isRep = true
             )
-            FitTimerComponent(
-                text = stringResource(id = R.string.workout_string),
+            FitTimerComponent(text = stringResource(id = R.string.workout_string),
                 value = workOutMinuteText,
                 secondValue = workOutSecondText,
                 haveSecondValue = true,
@@ -138,22 +136,16 @@ fun StartScreen(
                 onStringChange = { s: String, timeUnit: TimeUnit ->
                     if (s.isNotBlank()) {
                         fitTimerViewModel.changeTimeByString(
-                            s,
-                            timeUnit,
-                            FitTimerState.Workout
+                            s, timeUnit, FitTimerState.Workout
                         )
                     }
                     if (timeUnit == TimeUnit.Minute) {
-                        workOutMinuteText =
-                            s
+                        workOutMinuteText = s
                     } else {
-                        workOutSecondText =
-                            s
+                        workOutSecondText = s
                     }
-                }
-            )
-            FitTimerComponent(
-                text = stringResource(id = R.string.rest_string),
+                })
+            FitTimerComponent(text = stringResource(id = R.string.rest_string),
                 value = restMinuteText,
                 secondValue = restSecondText,
                 haveSecondValue = true,
@@ -170,20 +162,15 @@ fun StartScreen(
                 onStringChange = { s: String, timeUnit: TimeUnit ->
                     if (s.isNotBlank()) {
                         fitTimerViewModel.changeTimeByString(
-                            s,
-                            timeUnit,
-                            FitTimerState.Rest
+                            s, timeUnit, FitTimerState.Rest
                         )
                     }
                     if (timeUnit == TimeUnit.Minute) {
-                        restMinuteText =
-                            s
+                        restMinuteText = s
                     } else {
-                        restSecondText =
-                            s
+                        restSecondText = s
                     }
-                }
-            )
+                })
         }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
@@ -209,7 +196,7 @@ fun FitTimerComponent(
     secondValue: String = "",
     increaseHandler: () -> Unit,
     decreaseHandler: () -> Unit,
-    onStringChange: (it: String, timeUnit: TimeUnit) -> Unit = { s: String, timeUnit: TimeUnit -> },
+    onStringChange: (it: String, timeUnit: TimeUnit) -> Unit,
     isRep: Boolean = false,
 ) {
 
@@ -241,8 +228,7 @@ fun FitTimerComponent(
                     },
                     textStyle = TextStyle(fontSize = 24.sp),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(
-                        onDone = { Log.i("test", "test") },
+                    keyboardActions = KeyboardActions(onDone = { Log.i("test", "test") },
                         onGo = { Log.i("test", "go") }),
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
@@ -251,8 +237,7 @@ fun FitTimerComponent(
                             if (!it.isFocused) {
                                 if (value.isBlank()) {
                                     if (isRep) onStringChange(
-                                        "0",
-                                        TimeUnit.Minute
+                                        "0", TimeUnit.Minute
                                     ) else onStringChange("00", TimeUnit.Minute)
                                 }
                             }
@@ -277,8 +262,7 @@ fun FitTimerComponent(
                                 if (!it.isFocused) {
                                     if (value.isBlank()) {
                                         if (isRep) onStringChange(
-                                            "0",
-                                            TimeUnit.Second
+                                            "0", TimeUnit.Second
                                         ) else onStringChange("00", TimeUnit.Second)
                                     }
                                 }

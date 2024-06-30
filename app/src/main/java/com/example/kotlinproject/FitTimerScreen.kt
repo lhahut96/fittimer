@@ -107,7 +107,7 @@ fun FitTimerApp(
                     AnimatedContentTransitionScope.SlideDirection.End, tween(300)
                 )
             },
-            startDestination = FitTimerScreen.Start.name,
+            startDestination = FitTimerScreen.Progressing.name,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()

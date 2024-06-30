@@ -1,6 +1,5 @@
 package com.example.kotlinproject.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.kotlinproject.data.FitTime
 import com.example.kotlinproject.data.TimeUnit
@@ -81,23 +80,6 @@ class FitTimerViewModel : ViewModel() {
 
         }
 
-//    val increase: (type: FitTimerType) -> () -> FitTime = { type ->
-//        when (type) {
-//            FitTimerType.REP -> increaseRep
-//            FitTimerType.WORKOUT -> increaseWorkOutTime
-//            FitTimerType.REST -> increaseRestTime
-//        }
-//    }
-
-    val decrease: (type: FitTimerType) -> Unit = { type ->
-        when (type) {
-            FitTimerType.REP -> decreaseRep()
-            FitTimerType.WORKOUT -> decreaseWorkOutTime()
-            FitTimerType.REST -> decreaseRestTime()
-        }
-
-    }
-
     val nextRound: () -> Unit = {
         if (_uiState.value.currentRound < _uiState.value.numberOfRounds) {
             _uiState.update { currentState ->
@@ -106,6 +88,13 @@ class FitTimerViewModel : ViewModel() {
         }
     }
 
+    val goBackRound: () -> Unit = {
+        if (_uiState.value.currentRound >= 1) {
+            _uiState.update { currentState ->
+                currentState.copy(currentRound = currentState.currentRound.dec())
+            }
+        }
+    }
 }
 
 enum class FitTimerType { REP, WORKOUT, REST }
