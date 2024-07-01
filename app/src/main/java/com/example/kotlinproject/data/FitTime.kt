@@ -83,5 +83,27 @@ class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
         return FitTime(minutes, remainingSeconds)
     }
 
+    fun decreaseOneSecond(): FitTime {
+        if (seconds == 0 && minutes == 0) {
+            return this
+        }
+        if (seconds == 0) {
+            if (_minutes >= 1) {
+                _minutes -= 1
+                _seconds = 59
+            } else {
+                _minutes = 0
+                _seconds = 0
+            }
+        } else {
+            _seconds -= 1
+        }
+        val minutes = _seconds / 60 + _minutes
+        val remainingSeconds = _seconds % 60
+        return FitTime(minutes, remainingSeconds)
+    }
+    fun getMiliSeconds():Long {
+        return (_minutes*60 + _seconds) * 1000L
+    }
 
 }

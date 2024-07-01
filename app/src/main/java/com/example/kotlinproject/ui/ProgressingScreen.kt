@@ -1,7 +1,5 @@
 package com.example.kotlinproject.ui
 
-import android.graphics.drawable.VectorDrawable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,24 +10,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kotlinproject.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
@@ -43,16 +41,19 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
             .padding(start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
+        LaunchedEffect(Unit) {
+            fitTimerViewModel.startTimer()
+        }
         Text(
             text = "Round: ${fitTimerState.value.currentRound}/${fitTimerState.value.numberOfRounds}",
             fontSize = 34.sp
         )
         Text(text = fitTimerState.value.workState.name, fontSize = 26.sp)
-        Row() {
+        Row {
             val fontSize = 28.sp
-            Text(text = fitTimerState.value.workoutTime.formatedMinutes(), fontSize = fontSize)
+            Text(text = fitTimerState.value.currentTime.formatedMinutes(), fontSize = fontSize)
             Text(text = ":", fontSize = fontSize)
-            Text(text = fitTimerState.value.workoutTime.formatedSeconds(), fontSize = fontSize)
+            Text(text = fitTimerState.value.currentTime.formatedSeconds(), fontSize = fontSize)
         }
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             IconButton(onClick = { fitTimerViewModel.goBackRound() }) {
@@ -63,7 +64,14 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
                 )
             }
             Button(
-                onClick = { }, colors = ButtonColors(
+                onClick = {
+
+                    if (fitTimerState.value.clockState == FitTimerClockState.Progressing) {
+                        fitTimerViewModel.pauseTimer()
+                    } else {
+                        fitTimerViewModel.resumeTimer()
+                    }
+                }, colors = ButtonColors(
                     colorResource(id = R.color.primary),
                     colorResource(id = R.color.white),
                     colorResource(id = R.color.primary),
@@ -72,7 +80,10 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
                     .width(130.dp)
                     .height(48.dp)
             ) {
-                Text(text = "Pause", fontSize = 24.sp)
+                Text(
+                    text = if (fitTimerState.value.clockState == FitTimerClockState.Progressing) "Pause" else "Resume",
+                    fontSize = 24.sp
+                )
             }
             IconButton(onClick = { fitTimerViewModel.nextRound() }) {
                 Icon(

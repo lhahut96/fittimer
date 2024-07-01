@@ -1,5 +1,6 @@
 package com.example.kotlinproject.ui
 
+import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import com.example.kotlinproject.data.FitTime
 import com.example.kotlinproject.data.TimeUnit
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class FitTimerViewModel : ViewModel() {
+    private lateinit var countDownTimer: CountDownTimer
     private val _uiState = MutableStateFlow(FitTimerUiState())
 
     var uiState: StateFlow<FitTimerUiState> = _uiState.asStateFlow()
@@ -94,6 +96,57 @@ class FitTimerViewModel : ViewModel() {
                 currentState.copy(currentRound = currentState.currentRound.dec())
             }
         }
+    }
+
+    val startTimer: () -> Unit = {
+        _uiState.update { currentState ->
+            val currentStateTime =
+                if (_uiState.value.workState == FitTimerState.Workout) _uiState.value.workoutTime else _uiState.value.restTime
+            currentState.copy(
+                currentTime = currentStateTime
+            )
+        }
+
+        countDownTimer =
+            object : CountDownTimer(_uiState.value.currentTime.getMiliSeconds(), 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            currentTime = currentState.currentTime.decreaseOneSecond(),
+                            clockState = FitTimerClockState.Progressing
+                        )
+                    }
+                }
+
+                override fun onFinish() {
+                    TODO("Not yet implemented")
+                }
+            }
+
+        countDownTimer.start()
+    }
+
+    val pauseTimer: () -> Unit = {
+        countDownTimer.cancel()
+        _uiState.update { currentState -> currentState.copy(clockState = FitTimerClockState.Pause) }
+    }
+
+    val resumeTimer: () -> Unit = {
+        countDownTimer =
+            object : CountDownTimer(_uiState.value.currentTime.getMiliSeconds(), 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            currentTime = currentState.currentTime.decreaseOneSecond(),
+                        )
+                    }
+                }
+
+                override fun onFinish() {
+                    TODO("Not yet implemented")
+                }
+            }
+        countDownTimer.start()
     }
 }
 
