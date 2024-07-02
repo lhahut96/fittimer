@@ -1,18 +1,16 @@
 package com.example.kotlinproject.ui
 
+import android.media.MediaPlayer
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kotlinproject.data.FitTime
 import com.example.kotlinproject.data.TimeUnit
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -154,7 +152,8 @@ class FitTimerViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.update { currentState ->
                 currentState.copy(
-                    clockState = FitTimerClockState.Progressing
+                    clockState = FitTimerClockState.Progressing,
+
                 )
             }
             countDownTimer = initTimer()
@@ -176,6 +175,7 @@ class FitTimerViewModel : ViewModel() {
 
             override fun onFinish() {
                 if (_uiState.value.currentRound == _uiState.value.numberOfRounds && _uiState.value.workState == FitTimerState.Workout) {
+                    _uiState.update { currentState -> currentState.copy(clockState = FitTimerClockState.Stop) }
                     return cancel()
                 } else if (_uiState.value.workState == FitTimerState.Workout) {
                     _uiState.update { currentState ->

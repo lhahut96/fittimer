@@ -1,6 +1,7 @@
 package com.example.kotlinproject
 
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -17,6 +18,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -30,6 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.kotlinproject.ui.FitTimerClockState
 import com.example.kotlinproject.ui.FitTimerViewModel
 import com.example.kotlinproject.ui.ProgressingScreen
 import com.example.kotlinproject.ui.StartScreen
@@ -77,6 +81,17 @@ fun FitTimerApp(
     val startMediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.start)
     val currentScreen =
         FitTimerScreen.valueOf(backStackEntry?.destination?.route ?: FitTimerScreen.Start.name)
+
+    val uiState = viewModel.uiState.collectAsState()
+    val clockState = uiState.value.clockState
+
+    LaunchedEffect(clockState) {
+        if (clockState == FitTimerClockState.Stop) {
+            startMediaPlayer.start()
+            navController.navigateUp()
+        }
+    }
+
     Scaffold(
         topBar = {
             FitTimerAppBar(currentScreen,
@@ -107,7 +122,7 @@ fun FitTimerApp(
                     AnimatedContentTransitionScope.SlideDirection.End, tween(300)
                 )
             },
-            startDestination = FitTimerScreen.Progressing.name,
+            startDestination = FitTimerScreen.Start.name,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()

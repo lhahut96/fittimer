@@ -8,7 +8,7 @@ data class FitTimerUiState(
     val numberOfRounds: Int = 10,
     val currentRound: Int = 1,
     val currentTime: FitTime = workoutTime,
-    val clockState: FitTimerClockState = FitTimerClockState.Stop,
+    val clockState: FitTimerClockState = FitTimerClockState.Pause,
     val workState: FitTimerState = FitTimerState.Workout
 )
 enum class FitTimerState { Workout, Rest }
