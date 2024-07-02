@@ -1,6 +1,4 @@
-package com.example.kotlinproject.data
-
-import android.util.Log
+package com.fittimer.data
 
 enum class TimeUnit() { Minute, Second }
 class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {

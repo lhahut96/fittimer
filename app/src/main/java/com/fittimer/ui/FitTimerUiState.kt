@@ -1,6 +1,6 @@
-package com.example.kotlinproject.ui
+package com.fittimer.ui
 
-import com.example.kotlinproject.data.FitTime
+import com.fittimer.data.FitTime
 
 data class FitTimerUiState(
     val workoutTime: FitTime = FitTime(0, 5),

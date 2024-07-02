@@ -1,4 +1,4 @@
-package com.example.kotlinproject
+package com.fittimer
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.kotlinproject.ui.theme.KotLinProjectTheme
+import com.fittimer.ui.theme.KotLinProjectTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

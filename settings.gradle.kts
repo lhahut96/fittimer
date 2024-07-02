@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "KotLin Project"
+rootProject.name = "Fit Timer"
 include(":app")
  

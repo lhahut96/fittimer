@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.kotlinproject"
+    namespace = "com.fittimer"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.kotlinproject"
+        applicationId = "com.fittimer"
         minSdk = 28
         targetSdk = 34
         versionCode = 1

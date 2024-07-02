@@ -1,12 +1,11 @@
-package com.example.kotlinproject.ui
+package com.fittimer.ui
 
-import android.media.MediaPlayer
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kotlinproject.data.FitTime
-import com.example.kotlinproject.data.TimeUnit
+import com.fittimer.data.FitTime
+import com.fittimer.data.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

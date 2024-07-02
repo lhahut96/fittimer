@@ -1,7 +1,6 @@
-package com.example.kotlinproject
+package com.fittimer
 
 import android.media.MediaPlayer
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -33,10 +32,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.kotlinproject.ui.FitTimerClockState
-import com.example.kotlinproject.ui.FitTimerViewModel
-import com.example.kotlinproject.ui.ProgressingScreen
-import com.example.kotlinproject.ui.StartScreen
+import com.fittimer.ui.FitTimerClockState
+import com.fittimer.ui.FitTimerViewModel
+import com.fittimer.ui.ProgressingScreen
+import com.fittimer.ui.StartScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

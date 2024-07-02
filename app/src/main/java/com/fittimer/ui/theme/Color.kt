@@ -1,4 +1,4 @@
-package com.example.kotlinproject.ui.theme
+package com.fittimer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
