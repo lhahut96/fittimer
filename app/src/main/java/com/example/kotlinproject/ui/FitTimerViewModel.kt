@@ -1,13 +1,20 @@
 package com.example.kotlinproject.ui
 
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.kotlinproject.data.FitTime
 import com.example.kotlinproject.data.TimeUnit
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class FitTimerViewModel : ViewModel() {
     private lateinit var countDownTimer: CountDownTimer
@@ -64,8 +71,7 @@ class FitTimerViewModel : ViewModel() {
                 FitTimerState.Workout -> _uiState.update { currentState ->
                     currentState.copy(
                         workoutTime = currentState.workoutTime.setTimeByString(
-                            timeString,
-                            timeUnit
+                            timeString, timeUnit
                         )
                     )
                 }
@@ -73,8 +79,7 @@ class FitTimerViewModel : ViewModel() {
                 FitTimerState.Rest -> _uiState.update { currentState ->
                     currentState.copy(
                         restTime = currentState.restTime.setTimeByString(
-                            timeString,
-                            timeUnit
+                            timeString, timeUnit
                         )
                     )
                 }
@@ -83,71 +88,133 @@ class FitTimerViewModel : ViewModel() {
         }
 
     val nextRound: () -> Unit = {
-        if (_uiState.value.currentRound < _uiState.value.numberOfRounds) {
-            _uiState.update { currentState ->
-                currentState.copy(currentRound = currentState.currentRound.inc())
+        countDownTimer.cancel()
+        if (_uiState.value.currentRound == _uiState.value.numberOfRounds && _uiState.value.workState == FitTimerState.Workout) {
+            Log.i("test", "Finish")
+        } else if (_uiState.value.currentRound < _uiState.value.numberOfRounds) {
+            if (_uiState.value.workState == FitTimerState.Workout) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        workState = FitTimerState.Workout,
+                        currentRound = currentState.currentRound.inc()
+                    )
+                }
+            } else {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        workState = FitTimerState.Rest,
+                    )
+                }
             }
         }
+        updateCurrentStateTime()
+        startTimer()
     }
 
     val goBackRound: () -> Unit = {
-        if (_uiState.value.currentRound >= 1) {
+        countDownTimer.cancel()
+        if (_uiState.value.currentRound > 1 && _uiState.value.workState == FitTimerState.Workout) {
             _uiState.update { currentState ->
-                currentState.copy(currentRound = currentState.currentRound.dec())
+                currentState.copy(
+                    workState = FitTimerState.Rest, currentRound = currentState.currentRound.dec()
+                )
+            }
+        } else {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    workState = FitTimerState.Workout,
+                )
             }
         }
+
+        updateCurrentStateTime()
+        startTimer()
     }
 
-    val startTimer: () -> Unit = {
+    val updateCurrentStateTime: () -> Unit = {
         _uiState.update { currentState ->
             val currentStateTime =
-                if (_uiState.value.workState == FitTimerState.Workout) _uiState.value.workoutTime else _uiState.value.restTime
+                if (_uiState.value.workState == FitTimerState.Workout) FitTime(_uiState.value.workoutTime) else FitTime(
+                    _uiState.value.restTime
+                )
             currentState.copy(
                 currentTime = currentStateTime
             )
         }
+    }
 
-        countDownTimer =
-            object : CountDownTimer(_uiState.value.currentTime.getMiliSeconds(), 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            currentTime = currentState.currentTime.decreaseOneSecond(),
-                            clockState = FitTimerClockState.Progressing
-                        )
-                    }
-                }
+    private val resetTimer: () -> Unit = {
+        pauseTimer()
+        updateCurrentStateTime()
+        startTimer()
+    }
 
-                override fun onFinish() {
-                    TODO("Not yet implemented")
+
+    val startTimer: () -> Unit = {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    clockState = FitTimerClockState.Progressing
+                )
+            }
+            countDownTimer = initTimer()
+            countDownTimer.start()
+        }
+    }
+
+    val initTimer: () -> CountDownTimer = {
+        val newCurrentTime = _uiState.value.currentTime.increaseOneSecond()
+        object : CountDownTimer(newCurrentTime.getMiliSeconds(), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        currentTime = newCurrentTime.decreaseOneSecond(),
+                        clockState = FitTimerClockState.Progressing
+                    )
                 }
             }
 
-        countDownTimer.start()
+            override fun onFinish() {
+                if (_uiState.value.currentRound == _uiState.value.numberOfRounds && _uiState.value.workState == FitTimerState.Workout) {
+                    return cancel()
+                } else if (_uiState.value.workState == FitTimerState.Workout) {
+                    _uiState.update { currentState ->
+                        currentState.copy(workState = FitTimerState.Rest)
+                    }
+                } else {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            workState = FitTimerState.Workout,
+                            currentRound = currentState.currentRound.inc()
+                        )
+                    }
+                }
+                updateCurrentStateTime()
+                startTimer()
+            }
+        }
     }
 
     val pauseTimer: () -> Unit = {
-        countDownTimer.cancel()
-        _uiState.update { currentState -> currentState.copy(clockState = FitTimerClockState.Pause) }
+        viewModelScope.launch {
+            countDownTimer.cancel()
+            _uiState.update { currentState -> currentState.copy(clockState = FitTimerClockState.Pause) }
+        }
     }
 
     val resumeTimer: () -> Unit = {
-        countDownTimer =
-            object : CountDownTimer(_uiState.value.currentTime.getMiliSeconds(), 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            currentTime = currentState.currentTime.decreaseOneSecond(),
-                        )
-                    }
-                }
-
-                override fun onFinish() {
-                    TODO("Not yet implemented")
-                }
+        viewModelScope.launch {
+            countDownTimer.cancel()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    clockState = FitTimerClockState.Progressing
+                )
             }
-        countDownTimer.start()
+            delay(1000)
+            startTimer()
+        }
     }
+
 }
 
 enum class FitTimerType { REP, WORKOUT, REST }

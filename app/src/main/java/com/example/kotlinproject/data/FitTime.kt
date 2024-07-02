@@ -8,6 +8,11 @@ class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
     private val minutes = _minutes
     private val seconds = _seconds
 
+    constructor(fitTime: FitTime): this(
+        fitTime.minutes,
+        fitTime.seconds
+    )
+
     fun setTimeByString(timeString: String, timeUnit: TimeUnit): FitTime {
         val timeConverted = timeString.toIntOrNull() ?: 0
         return when (timeUnit) {
@@ -68,7 +73,7 @@ class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
             return this
         }
         if (seconds < 10) {
-            if (_minutes >=1) {
+            if (_minutes >= 1) {
                 _minutes -= 1
                 _seconds = 50 + seconds
             } else {
@@ -102,8 +107,33 @@ class FitTime(private var _minutes: Int = 0, private var _seconds: Int = 0) {
         val remainingSeconds = _seconds % 60
         return FitTime(minutes, remainingSeconds)
     }
-    fun getMiliSeconds():Long {
-        return (_minutes*60 + _seconds) * 1000L
+
+    fun increaseOneSecond(): FitTime {
+        if (seconds == 0 && minutes == 0) {
+            return this
+        }
+        if (seconds == 0) {
+            if (_minutes >= 1) {
+                _minutes += 1
+                _seconds = 59
+            } else {
+                _minutes = 0
+                _seconds = 0
+            }
+        } else {
+            _seconds += 1
+        }
+        val minutes = _seconds / 60 + _minutes
+        val remainingSeconds = _seconds % 60
+        return FitTime(minutes, remainingSeconds)
+    }
+
+    fun getMiliSeconds(): Long {
+        return (_minutes * 60 + _seconds) * 1000L
+    }
+
+    override fun toString(): String {
+        return formatedMinutes() + ":" + formatedSeconds()
     }
 
 }

@@ -42,13 +42,17 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
             .verticalScroll(scrollState)
     ) {
         LaunchedEffect(Unit) {
+            fitTimerViewModel.updateCurrentStateTime()
             fitTimerViewModel.startTimer()
         }
         Text(
             text = "Round: ${fitTimerState.value.currentRound}/${fitTimerState.value.numberOfRounds}",
             fontSize = 34.sp
         )
-        Text(text = fitTimerState.value.workState.name, fontSize = 26.sp)
+        Text(
+            text = if (fitTimerState.value.clockState == FitTimerClockState.Progressing) fitTimerState.value.workState.name else "Pause",
+            fontSize = 26.sp
+        )
         Row {
             val fontSize = 28.sp
             Text(text = fitTimerState.value.currentTime.formatedMinutes(), fontSize = fontSize)
@@ -77,7 +81,7 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
                     colorResource(id = R.color.primary),
                     colorResource(id = R.color.primary),
                 ), modifier = Modifier
-                    .width(130.dp)
+                    .width(140.dp)
                     .height(48.dp)
             ) {
                 Text(
@@ -85,7 +89,9 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
                     fontSize = 24.sp
                 )
             }
-            IconButton(onClick = { fitTimerViewModel.nextRound() }) {
+            IconButton(onClick = {
+                fitTimerViewModel.nextRound()
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.skip_next_24px),
                     contentDescription = "Skip Next button",
