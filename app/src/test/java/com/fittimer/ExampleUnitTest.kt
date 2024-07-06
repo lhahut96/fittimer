@@ -1,4 +1,4 @@
-package com.example.fittimer
+package com.fittimer
 
 import org.junit.Test
 

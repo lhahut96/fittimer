@@ -86,7 +86,7 @@ fun FitTimerApp(
 
     LaunchedEffect(clockState) {
         if (clockState == FitTimerClockState.Stop) {
-            startMediaPlayer.start()
+//            startMediaPlayer.start()
             navController.navigateUp()
         }
     }
