@@ -13,14 +13,19 @@
         android:theme="@style/Theme.KotLinProject"
         tools:targetApi="31">
         <activity
-            android:windowSoftInputMode="adjustResize"
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.KotLinProject">
+            android:theme="@style/Theme.KotLinProject"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <data
+                    android:host="auth"
+                    android:scheme="com.fittimer" />
             </intent-filter>
         </activity>
     </application>

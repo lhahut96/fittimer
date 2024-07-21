@@ -14,6 +14,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        manifestPlaceholders["redirectSchemeName"] = "com.fittimer"
+        manifestPlaceholders["redirectHostName"] = "auth"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -60,6 +63,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.auth)
+    implementation(files("/Users/macos/Downloads/spotify-app-remote-release-0.8.0.aar"))
+    implementation(libs.gson)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,4 +74,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    runtimeOnly("com.fasterxml.jackson.core:jackson-annotations:2.15.2")
 }
