@@ -9,14 +9,15 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,11 +33,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -66,13 +70,23 @@ fun FitTimerAppBar(
     currentScreen: FitTimerScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    onMusicIcon: () -> Unit,
+    isMusicPlaying: Boolean
 ) {
     TopAppBar(
         title = {
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
                 Text((stringResource(currentScreen.screenName)))
-                Button(onClick = { /*TODO*/ }) {
-                    Text(text = "test")
+                IconButton(onClick = { onMusicIcon() }) {
+                    Icon(
+                        painter = painterResource(id = if (isMusicPlaying) R.drawable.pause_button_svgrepo_com else R.drawable.play_button_svgrepo_com),
+                        contentDescription = "Play pause Button",
+                        modifier = Modifier.size(36.dp)
+                    )
                 }
             }
         },
@@ -123,10 +137,13 @@ fun FitTimerApp(
 
     builder.setScopes(arrayOf("streaming"))
     val request = builder.build()
-    AuthorizationClient.openLoginActivity(LocalContext.current.getActivity(), 1337, request)
-    Log.i(" connect", "try connecting")
+    val context = LocalContext.current.getActivity()
+    LaunchedEffect(context) {
+        AuthorizationClient.openLoginActivity(context, 1337, request)
+    }
+
     SpotifyAppRemote.connect(
-        LocalContext.current.getActivity(),
+        context,
         connectionParams,
         object : Connector.ConnectionListener {
             override fun onConnected(appRemote: SpotifyAppRemote) {
@@ -143,22 +160,41 @@ fun FitTimerApp(
                 Log.e("MainActivity", throwable.message, throwable)
                 // Something went wrong when attempting to connect! Handle errors here
             }
-        })
+        }
+    )
 
+
+    val playPauseMusic: () -> Unit = {
+        if (isSpotifyPlaying) {
+            spotifyAppRemote?.playerApi?.pause()
+        } else {
+            spotifyAppRemote?.playerApi?.resume()
+        }
+    }
 
 
     LaunchedEffect(clockState) {
         if (clockState == FitTimerClockState.Stop) {
 //            startMediaPlayer.start()
             navController.navigateUp()
+            viewModel.resetTimer()
         }
     }
 
     Scaffold(
         topBar = {
-            FitTimerAppBar(currentScreen,
+            FitTimerAppBar(
+                currentScreen,
                 canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() })
+                navigateUp = {
+                    navController.navigateUp()
+                    viewModel.resetTimer()
+                },
+                onMusicIcon = {
+                    playPauseMusic()
+                },
+                isMusicPlaying = isSpotifyPlaying
+            )
         },
         modifier = Modifier.imePadding()
     ) { innerPadding ->
@@ -198,14 +234,8 @@ fun FitTimerApp(
                             delay(4000L)
                             navController.navigate(FitTimerScreen.Progressing.name)
                         }
-                    },
-                    onMusicButton = {
-                        if (isSpotifyPlaying) {
-                            spotifyAppRemote?.playerApi?.pause()
-                        } else {
-                            spotifyAppRemote?.playerApi?.resume()
-                        }
                     })
+
             }
 
             composable(FitTimerScreen.Progressing.name) {

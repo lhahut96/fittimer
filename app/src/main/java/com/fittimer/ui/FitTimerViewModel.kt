@@ -87,7 +87,6 @@ class FitTimerViewModel : ViewModel() {
     val nextRound: () -> Unit = {
         countDownTimer.cancel()
         if (_uiState.value.currentRound == _uiState.value.numberOfRounds && _uiState.value.workState == FitTimerState.Workout) {
-            Log.i("test", "Finish")
         } else if (_uiState.value.currentRound < _uiState.value.numberOfRounds) {
             if (_uiState.value.workState == FitTimerState.Workout) {
                 _uiState.update { currentState ->
@@ -140,10 +139,16 @@ class FitTimerViewModel : ViewModel() {
         }
     }
 
-    private val resetTimer: () -> Unit = {
-        pauseTimer()
-        updateCurrentStateTime()
-        startTimer()
+    val resetTimer: () -> Unit = {
+       _uiState.update { currentState ->
+           currentState.copy(
+               clockState = FitTimerClockState.Stop,
+               currentRound = 1,
+               workState = FitTimerState.Workout,
+               currentTime = currentState.workoutTime
+           )
+       }
+        countDownTimer.cancel()
     }
 
 

@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun StartScreen(
-    fitTimerViewModel: FitTimerViewModel = viewModel(), onStartButton: () -> Unit = {}, onMusicButton : () -> Unit = {}
+    fitTimerViewModel: FitTimerViewModel = viewModel(), onStartButton: () -> Unit = {}
 ) {
     val fitTimerState = fitTimerViewModel.uiState.collectAsState()
 
@@ -184,9 +184,6 @@ fun StartScreen(
                 .height(48.dp)
         ) {
             Text(text = "Start", fontSize = 24.sp)
-        }
-        Button(onClick = onMusicButton) {
-            Text(text = "Music", fontSize = 24.sp)
         }
     }
 }
