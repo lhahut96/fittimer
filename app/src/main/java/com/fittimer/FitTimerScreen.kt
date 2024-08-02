@@ -116,6 +116,7 @@ fun FitTimerApp(
     val scope = rememberCoroutineScope()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val startMediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.start)
+    val notifMediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.notif)
     val currentScreen =
         FitTimerScreen.valueOf(backStackEntry?.destination?.route ?: FitTimerScreen.Start.name)
 
@@ -170,6 +171,12 @@ fun FitTimerApp(
         } else {
             spotifyAppRemote?.playerApi?.resume()
         }
+    }
+    val workoutState = uiState.value.workState
+
+    LaunchedEffect(workoutState) {
+        if (clockState == FitTimerClockState.Progressing)
+        notifMediaPlayer.start()
     }
 
 
