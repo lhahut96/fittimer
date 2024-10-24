@@ -67,7 +67,6 @@ fun ProgressingScreen(fitTimerViewModel: FitTimerViewModel = viewModel()) {
             }
             Button(
                 onClick = {
-
                     if (fitTimerState.value.clockState == FitTimerClockState.Progressing) {
                         fitTimerViewModel.pauseTimer()
                     } else {
